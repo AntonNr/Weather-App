@@ -27,7 +27,7 @@
         <!--Weather App-->
         <scene sceneID="tne-QT-ifu">
             <objects>
-                <viewController storyboardIdentifier="ViewController" id="BYZ-38-t0r" customClass="ViewController" customModule="Weather_App" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="FirstViewController" id="BYZ-38-t0r" customClass="FirstViewController" customModule="Weather_App" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="8bC-Xf-vdC">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -76,13 +76,13 @@
                     <navigationItem key="navigationItem" title="Weather App" id="Nbx-5C-9SH">
                         <barButtonItem key="rightBarButtonItem" systemItem="add" id="rRK-WT-4kv">
                             <connections>
-                                <action selector="didTapAddNewCityButton" destination="BYZ-38-t0r" id="7me-b4-zNZ"/>
+                                <action selector="didTapAddNewCityButton" destination="BYZ-38-t0r" id="toz-qJ-Xod"/>
                             </connections>
                         </barButtonItem>
                     </navigationItem>
                     <connections>
-                        <outlet property="addNewCityButton" destination="rRK-WT-4kv" id="Dtp-hD-Jz3"/>
-                        <outlet property="tableView" destination="0eM-zG-Nab" id="OHY-TE-vNg"/>
+                        <outlet property="addNewCityButton" destination="rRK-WT-4kv" id="bXr-AU-9ok"/>
+                        <outlet property="tableView" destination="0eM-zG-Nab" id="HrT-5Z-wp8"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>

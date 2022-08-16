@@ -30,36 +30,14 @@ struct Hourly: Codable {
     }
 }
 
-class WeatherViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
+class WeatherViewModel: NSObject {
     var selectedCity: String = ""
     var latitude, longitude: Double?
-    var weather: Weather?
     var locationManager = CLLocationManager()
-    
-    @IBOutlet var locationLabel: UILabel!
-    @IBOutlet var tableView: UITableView!
-    
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        if selectedCity == "My Location"{
-            locationLabel.text = "My Location"
-            loadUserLocation()
-        } else {
-            loadCityData()
-        }
-        tableView.delegate = self
-        tableView.dataSource = self
-    }
-    
-//    override func viewWillAppear(_ animated: Bool) {
-//        super.viewWillAppear(animated)
-//        loadUserLocation()
-//    }
-    
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
-        locationManager.delegate = nil
-    }
+    var showErrorAlert: ((String) -> Void)?
+    var openNextScreen: ((City) -> Void)?
+    var cityName: ((String) -> Void)?
+    var weather: ((Weather)-> Void)?
     
     func loadUserLocation() {
         locationManager.delegate = self
@@ -82,9 +60,9 @@ class WeatherViewController: UIViewController, UITableViewDelegate, UITableViewD
                         if (result.results == nil) {
                             let alertError = UIAlertController(title: "Error", message: "Failed to load the city you selected.", preferredStyle: .alert)
                             alertError.addAction(UIAlertAction(title: "OK", style: .default))
-                            self.present(alertError, animated: true)
+                            self.showErrorAlert?("Error")
                         } else {
-                            self.locationLabel.text = result.results?.first?.name
+                            self.cityName?(result.results?.first?.name ?? "")
                             self.latitude = result.results?.first!.latitude
                             self.longitude = result.results?.first!.longitude
                             self.loadData()
@@ -92,7 +70,7 @@ class WeatherViewController: UIViewController, UITableViewDelegate, UITableViewD
                         
                         if let error = error {
                             let alertError = UIAlertController(title: "Error", message: error.localizedDescription, preferredStyle: .alert)
-                            self.present(alertError, animated: true)
+                            self.showErrorAlert?("Error")
                         }
                     }
                 }
@@ -111,58 +89,35 @@ class WeatherViewController: UIViewController, UITableViewDelegate, UITableViewD
             NSURLConnection.sendAsynchronousRequest(request, queue: OperationQueue.main) { request, data, error in
                 if let data = data {
                     if let results: Weather = try? JSONDecoder().decode(Weather.self, from: data) {
-                            self.weather = results
-                            self.tableView.reloadData()
+                        self.weather?(results)
                     }
                 }
                 
                 if let error = error {
                     let alertError = UIAlertController(title: "Error", message: error.localizedDescription, preferredStyle: .alert)
-                    self.present(alertError, animated: true)
+                    self.showErrorAlert?("Error")
                 }
             }
         }
     }
     
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return weather?.hourly.time.count ?? 0
-    }
-        
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        
-        if let cell = tableView.dequeueReusableCell(withIdentifier: "WeatherTableViewCell", for: indexPath) as? WeatherTableViewCell {
-            
-            let currentTime =  weather?.hourly.time[indexPath.row]
-            let currentTemperature = weather?.hourly.temperature2M[indexPath.row]
-            let currentWindSpeed = weather?.hourly.windSpeed10M[indexPath.row]
-            let currentHumidity = weather?.hourly.relativeHumidity2M[indexPath.row]
-            
-            cell.timeLabel.text = "\(currentTime!)"
-            cell.temperatureLabel.text = "\(currentTemperature!)°"
-            cell.windSpeedLabel.text = "\(currentWindSpeed!)km/h"
-            cell.humidityLabel.text = "\(currentHumidity!)%"
-                    
-            return cell
-        }
-        return UITableViewCell()
-    }
-    
 }
 
-extension WeatherViewController: CLLocationManagerDelegate {
-    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        if let location = locations.first {
-            latitude = location.coordinate.latitude
-            longitude = location.coordinate.longitude
-            loadData()
-        }
-    }
-    
+extension WeatherViewModel: CLLocationManagerDelegate {
+
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
         if manager.authorizationStatus == .authorizedAlways || manager.authorizationStatus == .authorizedWhenInUse {
             locationManager.startUpdatingLocation()
         } else {
             locationManager.stopUpdatingLocation()
+        }
+    }
+    
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        if let location = locations.first {
+            latitude = location.coordinate.latitude
+            longitude = location.coordinate.longitude
+            loadData()
         }
     }
 }

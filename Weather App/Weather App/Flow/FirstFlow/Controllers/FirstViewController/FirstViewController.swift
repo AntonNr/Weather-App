@@ -1,11 +1,19 @@
+import Foundation
 import UIKit
 
-class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
-
+class FirstViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
+    
     @IBOutlet var addNewCityButton: UIBarButtonItem!
     @IBOutlet var tableView: UITableView!
     
     var citiesArray: [String] = []
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        tableView.delegate = self
+        tableView.dataSource = self
+    }
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
@@ -16,24 +24,13 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
             citiesArray.append(myLocationString)
             UserDefaults.standard.set(citiesArray, forKey: UserDefaultsKey.kCities.rawValue)
         } else {
-            citiesArray = UserDefaults.standard.object(forKey: UserDefaultsKey.kCities.rawValue) as! [String] // как безопасно преобразовать в String?
+            if let citiesArray = UserDefaults.standard.object(forKey: UserDefaultsKey.kCities.rawValue) as? [String] {
+                self.citiesArray = citiesArray
+            }
         }
         tableView.reloadData()
     }
     
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        // Do any additional setup after loading the view.
-        let button = UIButton(type: .roundedRect)
-              button.frame = CGRect(x: 20, y: 400, width: 100, height: 30)
-              button.setTitle("Test Crash", for: [])
-              button.addTarget(self, action: #selector(self.crashButtonTapped(_:)), for: .touchUpInside)
-              view.addSubview(button)
-        
-        tableView.delegate = self
-        tableView.dataSource = self
-    }
-
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return citiesArray.count
     }
@@ -47,15 +44,21 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         }
         return UITableViewCell()
     }
-    
+
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
+        
+        let weatherVModel = WeatherViewModel()
+        weatherVModel.selectedCity = citiesArray[indexPath.row]
+        
         let storyBoard: UIStoryboard = UIStoryboard(name: "Main", bundle: nil)
-        let vc: WeatherViewController = storyBoard.instantiateViewController(withIdentifier: "WeatherViewController") as! WeatherViewController
-        vc.selectedCity = citiesArray[indexPath.row]
-        self.navigationController?.pushViewController(vc, animated: true)
+        let weatherVC: WeatherViewController = storyBoard.instantiateViewController(withIdentifier: "WeatherViewController") as! WeatherViewController
+        
+        weatherVC.weatherVModel = weatherVModel
+        
+        self.navigationController?.pushViewController(weatherVC, animated: true)
     }
-
+    
     @IBAction func didTapAddNewCityButton() {
         let alertNewCity = UIAlertController(title: NSLocalizedString("title_add_city", comment: ""), message: "", preferredStyle: .alert)
         alertNewCity.addTextField()
@@ -71,12 +74,6 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         
         self.present(alertNewCity, animated: true)
     }
-    
-    @IBAction func crashButtonTapped(_ sender: AnyObject) {
-          let numbers = [0]
-          let _ = numbers[1]
-      }
-    
 }
 
 enum UserDefaultsKey: String {
