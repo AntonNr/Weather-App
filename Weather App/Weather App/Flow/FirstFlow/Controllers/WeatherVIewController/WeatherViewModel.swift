@@ -2,13 +2,13 @@ import Foundation
 import UIKit
 import CoreLocation
 
-struct City: Codable {
+struct City1: Codable {
     var name: String?
     let latitude, longitude: Double
 }
 
 struct ResultOfRequest: Codable {
-    var results: [City]?
+    var results: [City1]?
 }
 
 struct Weather: Codable {
@@ -35,9 +35,9 @@ class WeatherViewModel: NSObject {
     var latitude, longitude: Double?
     var locationManager = CLLocationManager()
     var showErrorAlert: ((String) -> Void)?
-    var openNextScreen: ((City) -> Void)?
+    var openNextScreen: ((City1) -> Void)?
     var cityName: ((String) -> Void)?
-    var weather: ((Weather)-> Void)?
+    var weather: ((Weather) -> Void)?
     
     func loadUserLocation() {
         locationManager.delegate = self
